@@ -2,6 +2,9 @@
 
 This FastAPI service extracts lab test names, values, units, and reference ranges from uploaded lab report images.
 
+## Deployed Edpoint
+https://test-data-e7ez.onrender.com/get-lab-tests
+
 ## Features
 
 - Accepts lab report images via POST request
