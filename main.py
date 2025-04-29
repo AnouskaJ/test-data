@@ -3,10 +3,9 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List
-from PIL import Image
-import pytesseract
 import io
 import re
+from PyPDF2 import PdfReader
 
 # Initialising FastAPI
 app = FastAPI()
@@ -27,8 +26,10 @@ class LabTestResponse(BaseModel):
     is_success: bool
     data: List[LabTest]
 
-# Extracting data from image using Pytesseract
+# Extracting data from PDF using PyPDF2
 def parse_lab_tests(text: str) -> List[LabTest]:
+    # Pattern Matching - Regex
+    # Pattern: Test Name, Test Value, Test Unit, Bio Reference Range
     pattern = re.compile(
         r"([A-Za-z\s\(\)]+)\s+([\d.]+)\s*([^\d\s]+)?\s+\(?([\d.]+)\s*-\s*([\d.]+)\)?"
     )
@@ -50,16 +51,17 @@ def parse_lab_tests(text: str) -> List[LabTest]:
         ))
     return results
 
-
 # API Endpoint  
 @app.post("/get-lab-tests", response_model=LabTestResponse)
 async def get_lab_tests(file: UploadFile = File(...)):
     try:
-        # Image to PIL Image
-        image_bytes = await file.read()
-        image = Image.open(io.BytesIO(image_bytes))
-        # Image to String  
-        text = pytesseract.image_to_string(image)
+        # Read PDF file
+        pdf_bytes = await file.read()
+        pdf_stream = io.BytesIO(pdf_bytes)
+        reader = PdfReader(pdf_stream)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() or ""
         lab_tests = parse_lab_tests(text)
         return LabTestResponse(is_success=True, data=lab_tests)
     except Exception as e:
