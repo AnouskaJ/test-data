@@ -11,7 +11,7 @@ This FastAPI service extracts lab test names, values, units, and reference range
 - Returns structured JSON output
 
 ## Sample
-![image](https://github.com/user-attachments/assets/6a276610-3eda-4e4b-9cb9-f02c0fcb9b84)
+![Screenshot 2025-04-29 114138](https://github.com/user-attachments/assets/0c481c63-3f8c-4a74-9e93-5e3617c1ae7c)
 
 ## How to Run
 
