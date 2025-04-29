@@ -1,27 +1,47 @@
-# Deploy FastAPI on Render
+# Lab Report Extraction API
 
-Use this repo as a template to deploy a Python [FastAPI](https://fastapi.tiangolo.com) service on Render.
+This FastAPI service extracts lab test names, values, units, and reference ranges from uploaded lab report images.
 
-See https://render.com/docs/deploy-fastapi or follow the steps below:
+## Features
 
-## Manual Steps
+- Accepts lab report images via POST request
+- Uses OCR (pytesseract) to extract text
+- Parses lab test name, value, unit, and reference range
+- Flags if the test value is out of the reference range
+- Returns structured JSON output
 
-1. You may use this repository directly or [create your own repository from this template](https://github.com/render-examples/fastapi/generate) if you'd like to customize the code.
-2. Create a new Web Service on Render.
-3. Specify the URL to your new repository or this repository.
-4. Render will automatically detect that you are deploying a Python service and use `pip` to download the dependencies.
-5. Specify the following as the Start Command.
+## Sample
+![image](https://github.com/user-attachments/assets/6a276610-3eda-4e4b-9cb9-f02c0fcb9b84)
 
-    ```shell
-    uvicorn main:app --host 0.0.0.0 --port $PORT
+## How to Run
+
+1. **Install dependencies:**
+    ```
+    pip install fastapi uvicorn pillow pytesseract
     ```
 
-6. Click Create Web Service.
+2. **Start the server:**
+    ```
+    uvicorn app:app --reload
+    ```
 
-Or simply click:
+3. **Use the API:**
+    - Endpoint: `POST /get-lab-tests`
+    - Form field: `file` (image file)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/render-examples/fastapi)
+## Output Example
 
-## Thanks
-
-Thanks to [Harish](https://harishgarg.com) for the [inspiration to create a FastAPI quickstart for Render](https://twitter.com/harishkgarg/status/1435084018677010434) and for some sample code!
+```json
+{
+  "is_success": true,
+  "data": [
+    {
+      "test_name": "HB ESTIMATION",
+      "test_value": 9.4,
+      "bio_reference_range": "12.0-15.0",
+      "test_unit": "g/dl",
+      "lab_test_out_of_range": true
+    }
+  ]
+}
+```
