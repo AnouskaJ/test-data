@@ -5,10 +5,11 @@ from typing import List
 import io
 import re
 from pypdf import PdfReader
+import easyocr
 from PIL import Image
-import pytesseract
 
 app = FastAPI()
+reader = easyocr.Reader(['en'], gpu=False)  
 
 class LabTest(BaseModel):
     test_name: str
@@ -50,20 +51,22 @@ async def get_lab_tests(file: UploadFile = File(...)):
         if filename.endswith('.pdf'):
             pdf_bytes = await file.read()
             pdf_stream = io.BytesIO(pdf_bytes)
-            reader = PdfReader(pdf_stream)
-            for page in reader.pages:
+            reader_pdf = PdfReader(pdf_stream)
+            for page in reader_pdf.pages:
                 page_text = page.extract_text()
                 if page_text:
                     text += page_text
             if not text.strip():
                 return JSONResponse(
                     status_code=400,
-                    content={"is_success": False, "data": [], "error": "No extractable text found in PDF. If your PDF is scanned, please upload as an image."}
+                    content={"is_success": False, "data": [], "error": "No extractable text found in PDF."}
                 )
         else:
             image_bytes = await file.read()
-            image = Image.open(io.BytesIO(image_bytes))
-            text = pytesseract.image_to_string(image)
+            image_stream = io.BytesIO(image_bytes)
+            image = Image.open(image_stream)
+            result = reader.readtext(image_bytes, detail=0, paragraph=True)
+            text = "\n".join(result)
         lab_tests = parse_lab_tests(text)
         return LabTestResponse(is_success=True, data=lab_tests)
     except Exception as e:
